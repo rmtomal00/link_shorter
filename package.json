@@ -1,0 +1,20 @@
+{
+  "name": "link_shorter",
+  "version": "1.0.1",
+  "description": "Link shorter project",
+  "main": "app.js",
+  "scripts": {
+    "test": "node --watch.js"
+  },
+  "author": "Team71",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.10.1",
+    "nodemailer": "^6.9.14",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
+  }
+}
