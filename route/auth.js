@@ -2,9 +2,11 @@ const express = require("express");
 const NullChecker = require("../common/nullChecker");
 const Response = require("../responseModel/response");
 const User = require("../database/models/User");
+const JwtToken = require("../Jwt/TokenExtractor");
 const auth = express.Router()
 const nullChecker = new NullChecker()
 const Res = new Response()
+const jwtToken = new JwtToken();
 
 
 auth.use(express.json());
@@ -35,8 +37,6 @@ auth.get("/register", async (req, res)=>{
             Res.errorResponse(res, "Email already register", 400);
             return
         }
-        console.log(user);
-
         Res.successResponse(res, "Successfull", null,)
     } catch (error) {
         console.log(error);
