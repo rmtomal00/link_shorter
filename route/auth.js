@@ -49,7 +49,7 @@ auth.get("/register", async (req, res)=>{
         const createUser = await User.create({username, email, password: hash})
         const token = jwtToken.createToken(null, createUser.dataValues.id)
         const url = `${base_url}/verify?token=${token}`;
-        const mail = await sendmail.sendMail(email, "Verify email from Team71.link", url);
+        const mail = sendmail.sendMail(email, "Verify email from Team71.link", url);
         Res.successResponse(res, "Successfull",  mail.emailId);
     } catch (error) {
         console.log(error);
@@ -70,7 +70,7 @@ auth.post("/login", async (req, res)=>{
         }
         email = String(email).toLowerCase().trim();
         const user = await User.findOne({where: {email: email}});
-        console.log(user);
+        //console.log(user);
         if (!user) {
             Res.errorResponse(res, "User not found", 400);
             return;
@@ -78,7 +78,7 @@ auth.post("/login", async (req, res)=>{
 
         const userDetails = user.dataValues;
         const pass = await compareSync(password, userDetails.password)
-        console.log(pass);
+        //console.log(pass);
         if (!pass) {
             Res.errorResponse(res, "User password not match", 400);
             return;
@@ -116,7 +116,63 @@ auth.post("/forget-password", async (req, res)=>{
             Res.errorResponse(res, check, 400);
             return;
         }
-        
+
+        email = String(email).toLowerCase().trim();
+
+        const user = await User.findOne({where: {email:email}});
+        if (!user) {
+            Res.errorResponse(res, "User not found", 400);
+            return;
+        }
+        const userDetails = user.dataValues;
+        if (!userDetails.isEmailVerifird) {
+            Res.errorResponse(res, "User email not verified", 400);
+            return;
+        }
+        if (userDetails.isDisable) {
+            Res.errorResponse(res, "User account is disbale", 400);
+            return;
+        }
+        const tokenGen = await jwtToken.createToken(userDetails.email, userDetails.id);
+        if (!tokenGen) {
+            Res.errorResponse(res, "User token not generate", 400);
+            return;
+        }
+        const link = process.env.BASE_URL+'/forget-password?token='+tokenGen;
+        sendmail.sendMail(userDetails.email, "Forget password for Team71.link", link);
+        Res.successResponse(res, "Please check your email");
+    } catch (error) {
+        console.log(error);
+        Res.serverError(res, error.message)
+    }
+})
+
+auth.post("/confirm-password", async (req, res)=>{
+    try {
+        const {token, password, cmpassword} = req.body;
+        const obj = {token, password, cmpassword}
+        const nullcheck = await nullChecker.check(obj);
+        if(nullcheck){
+            Res.errorResponse(res, nullcheck, 400);
+            return;
+        }
+        if (String(password) !== String(cmpassword)) {
+            Res.errorResponse(res, "Password and Confirm not match", 400);
+            return;
+        }
+        const tokenData = jwtToken.tokenExtractor(token);
+        if (tokenData.error) {
+            Res.errorResponse(res, tokenData.messag, 401)
+            return;
+        }
+        const hashPass = await hashSync(password, 10);
+        const update = await User.update({password: hashPass}, {where: {id: tokenData.id}});
+        if (update[0] != 1) {
+            Res.errorResponse(res, "Password not update", 400);
+            return;
+        }
+        sendmail.sendMail(tokenData.email, "Password change successfully", )
+        Res.successResponse(res, "Password change successfully");
     } catch (error) {
         console.log(error);
         Res.serverError(res, error.message)
