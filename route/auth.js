@@ -50,7 +50,7 @@ auth.get("/register", async (req, res)=>{
         const token = jwtToken.createToken(null, createUser.dataValues.id)
         const url = `${base_url}/verify?token=${token}`;
         const mail = sendmail.sendMail(email, "Verify email from Team71.link", url);
-        Res.successResponse(res, "Successfull",  mail.emailId);
+        Res.successResponse(res, "Successfull");
     } catch (error) {
         console.log(error);
         Res.serverError(res, error.message)
@@ -138,6 +138,7 @@ auth.post("/forget-password", async (req, res)=>{
             Res.errorResponse(res, "User token not generate", 400);
             return;
         }
+        await User.update({temp_token: tokenGen}, {where: {id: userDetails.id}})
         const link = process.env.BASE_URL+'/forget-password?token='+tokenGen;
         sendmail.sendMail(userDetails.email, "Forget password for Team71.link", link);
         Res.successResponse(res, "Please check your email");
@@ -165,17 +166,56 @@ auth.post("/confirm-password", async (req, res)=>{
             Res.errorResponse(res, tokenData.messag, 401)
             return;
         }
+        const user = await User.findOne({where: {id: tokenData.id}});
+        if (!user) {
+            Res.errorResponse(res, "User not found", 400)
+            return;
+        }
+        if (!user.dataValues.temp_token || user.dataValues.temp_token !== token) {
+            Res.errorResponse(res, "Token revoked", 400)
+            return;
+        }
         const hashPass = await hashSync(password, 10);
-        const update = await User.update({password: hashPass}, {where: {id: tokenData.id}});
+        const update = await User.update({password: hashPass, temp_token: null}, {where: {id: tokenData.id}});
         if (update[0] != 1) {
             Res.errorResponse(res, "Password not update", 400);
             return;
         }
-        sendmail.sendMail(tokenData.email, "Password change successfully", )
+        sendmail.sendMail(tokenData.email, "Password change successfully", `Hi${user.dataValues.username}\nYour password change successfully`)
         Res.successResponse(res, "Password change successfully");
     } catch (error) {
         console.log(error);
         Res.serverError(res, error.message)
+    }
+})
+
+auth.get("/resend-email-verification", async(req, res)=>{
+    try {
+        const {email} = req.query
+        if (!email) {
+            Res.errorResponse(res, "Email can't be null", 400);
+            return;
+        }
+        const user = await User.findByPk({where: {email}});
+        if (!user) {
+            Res.errorResponse(res, "User not found", 400)
+            return;
+        }
+        if (user.dataValues.isEmailVerifird) {
+            Res.errorResponse(res, "User already verified", 400)
+            return;
+        }
+        const token = jwtToken.createToken(email, user.dataValues.id);
+        if (!token) {
+            Res.errorResponse(res, "Token creating error", 400)
+            return;
+        }
+        const url = `${base_url}/verify?token=${token}`;
+        sendmail.sendMail(email, "Verify email from Team71.link", url);
+        Res.successResponse(res, "Successfully resend email, Please check your mail");
+    } catch (error) {
+        console.log(error);
+        Res.serverError(res, error.message);
     }
 })
 
