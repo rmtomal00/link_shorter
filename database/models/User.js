@@ -61,6 +61,7 @@ const User = sequelize.define("users", {
         allowNull: false,
         defaultValue: false
     }
+    
 },{
     timestamps: true,
     createdAt: 'createAt',

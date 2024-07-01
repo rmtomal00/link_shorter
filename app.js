@@ -1,17 +1,20 @@
 const express = require('express')
-const auth = require('./route/auth')
+const auth = require('./route/auth/auth')
 const JwtToken = require('./Jwt/TokenExtractor');
 const Response = require('./responseModel/response');
 const User = require('./database/models/User');
+const users = require('./route/user/user');
 require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
+
 
 
 const app = express()
 app.use(express.json())
 const port = process.env.PORT || 3000
 app.use('/api/v1/auth', auth)
+app.use('/api/v1/users', users)
 
 app.get('/', async(req, res) => {
     res.send('Hello World!')
@@ -50,5 +53,8 @@ app.get("/verify", async (req, res)=>{
         console.log(error);
         ApiRes.serverError(res, error.message);
     }
+})
+app.get("/:id", (req, res)=>{
+    console.log(req.params);
 })
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

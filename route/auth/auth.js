@@ -1,10 +1,11 @@
 const express = require("express");
-const NullChecker = require("../common/nullChecker");
-const Response = require("../responseModel/response");
-const User = require("../database/models/User");
-const JwtToken = require("../Jwt/TokenExtractor");
+const NullChecker = require("../../common/nullChecker");
+const Response = require("../../responseModel/response");
+const User = require("../../database/models/User");
+const JwtToken = require("../../Jwt/TokenExtractor");
 const { hashSync, compareSync } = require("bcrypt");
-const SendMail = require("../mailconf/sendMail");
+const SendMail = require("../../mailconf/sendMail");
+const Subscribtion = require("../../database/models/subscribtion");
 const auth = express.Router()
 const nullChecker = new NullChecker()
 const Res = new Response()
@@ -15,7 +16,7 @@ const base_url = process.env.BASE_URL
 
 auth.use(express.json());
 
-auth.get("/register", async (req, res)=>{
+auth.post("/register", async (req, res)=>{
     try {
         var {username, password, email} = req.body;
         const  dataObj = {username, email, password}
@@ -47,6 +48,7 @@ auth.get("/register", async (req, res)=>{
         }
         const hash = hashSync(password, 10)
         const createUser = await User.create({username, email, password: hash})
+        await Subscribtion.create({userId: createUser.dataValues.id, })
         const token = jwtToken.createToken(null, createUser.dataValues.id)
         const url = `${base_url}/verify?token=${token}`;
         const mail = sendmail.sendMail(email, "Verify email from Team71.link", url);
@@ -93,7 +95,7 @@ auth.post("/login", async (req, res)=>{
         }
 
         const genToken = jwtToken.createToken(userDetails.email, userDetails.id);
-        console.log(genToken);
+        //console.log(genToken);
 
         const userTokenUpdate = await User.update({token: genToken}, {where: {email: email}})
         if (userTokenUpdate[0] != 1) {
@@ -133,7 +135,7 @@ auth.post("/forget-password", async (req, res)=>{
             Res.errorResponse(res, "User account is disbale", 400);
             return;
         }
-        const tokenGen = await jwtToken.createToken(userDetails.email, userDetails.id);
+        const tokenGen = await jwtToken.createToken(null, userDetails.id);
         if (!tokenGen) {
             Res.errorResponse(res, "User token not generate", 400);
             return;
@@ -181,7 +183,7 @@ auth.post("/confirm-password", async (req, res)=>{
             Res.errorResponse(res, "Password not update", 400);
             return;
         }
-        sendmail.sendMail(tokenData.email, "Password change successfully", `Hi${user.dataValues.username}\nYour password change successfully`)
+        sendmail.sendMail(tokenData.email, "Password change successfully", `Hi ${user.dataValues.username}\nYour password change successfully`)
         Res.successResponse(res, "Password change successfully");
     } catch (error) {
         console.log(error);
@@ -196,7 +198,7 @@ auth.get("/resend-email-verification", async(req, res)=>{
             Res.errorResponse(res, "Email can't be null", 400);
             return;
         }
-        const user = await User.findByPk({where: {email}});
+        const user = await User.findOne({where: {email: String(email).trim().toLowerCase()}});
         if (!user) {
             Res.errorResponse(res, "User not found", 400)
             return;
@@ -205,7 +207,7 @@ auth.get("/resend-email-verification", async(req, res)=>{
             Res.errorResponse(res, "User already verified", 400)
             return;
         }
-        const token = jwtToken.createToken(email, user.dataValues.id);
+        const token = jwtToken.createToken(null, user.dataValues.id);
         if (!token) {
             Res.errorResponse(res, "Token creating error", 400)
             return;

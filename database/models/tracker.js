@@ -4,7 +4,7 @@ const sequelize = require("../db");
 
 const Tracker = sequelize.define("tracker",{
     id:{
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         autoIncrement: true,
         primaryKey: true,
         allowNull: false,
@@ -19,11 +19,6 @@ const Tracker = sequelize.define("tracker",{
         allowNull: false,
         defaultValue: "0.0.0.0"
     },
-    click:{
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        defaultValue: 0,
-    },
     createAt:{
         type: Sequelize.DATE,
         allowNull: false,
@@ -31,11 +26,6 @@ const Tracker = sequelize.define("tracker",{
     },
     click_device:{
         type: Sequelize.STRING,
-    },
-    updateAt:{
-        type: Sequelize.DATE,
-        onUpdate: Sequelize.NOW,
-        defaultValue: Sequelize.NOW
     }
 })
 
