@@ -23,6 +23,10 @@ const StoreLink = sequelize.define("storelink", {
         allowNull: false,
         unique: true
     },
+    shortlink:{
+        type: Sequelize.STRING,
+        allowNull: false
+    },
     createAt:{
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,

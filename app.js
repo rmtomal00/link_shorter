@@ -4,6 +4,7 @@ const JwtToken = require('./Jwt/TokenExtractor');
 const Response = require('./responseModel/response');
 const User = require('./database/models/User');
 const users = require('./route/user/user');
+const StoreLink = require('./database/models/storelink');
 require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
@@ -16,7 +17,7 @@ const port = process.env.PORT || 3000
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)
 
-app.get('/', async(req, res) => {
+app.get('/test', async(req, res) => {
     res.send('Hello World!')
 });
 
@@ -54,7 +55,50 @@ app.get("/verify", async (req, res)=>{
         ApiRes.serverError(res, error.message);
     }
 })
-app.get("/:id", (req, res)=>{
-    console.log(req.params);
+app.get("/:id", async (req, res)=>{
+    try {
+        const {id} = req.params;
+        if (!id) {
+            ApiRes.errorResponse(res, "Link not valid", 400);
+            return;
+        }
+        var deviceData = req.headers['user-agent']
+        console.log(deviceData);
+        var device = "";
+        var bool = false
+        for (let index = 0; index < deviceData.length; index++) {
+            if (deviceData[index]==="(") {
+                bool = true;
+            }
+            if (bool) {
+                if (!(deviceData[index]==="(") && !(deviceData[index]===")")) {
+                    //console.log("b");
+                    device += deviceData[index]
+                }
+            }
+            if (deviceData[index]===")") {
+                break
+            }
+            //console.log(device);
+        }
+        const ip = req.socket.remoteAddress
+        //console.log(device);
+        
+        const idData = await StoreLink.findOne({where: {shortId: id}});
+        if(!idData){
+            ApiRes.errorResponse(res, "Invalid link", 400)
+            return;
+        }
+        const data = idData.dataValues;
+        const userId = data.userId, realLink = data.link;
+        if (!userId || !realLink) {
+            ApiRes.errorResponse(res, "Link not found", 404);
+            return
+        }
+        res.redirect(realLink);
+    } catch (error) {
+        console.log(error);
+        ApiRes.serverError(res, error.message)
+    }
 })
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

@@ -26,7 +26,14 @@ const Tracker = sequelize.define("tracker",{
     },
     click_device:{
         type: Sequelize.STRING,
+    },
+    link:{
+        type: Sequelize.STRING,
+        allowNull: false
     }
+},{
+    tableName: "tracker",
+    timestamps: false
 })
 
 module.exports = Tracker
