@@ -15,6 +15,7 @@ const base_url = process.env.BASE_URL
 
 
 auth.use(express.json());
+auth.use(express.urlencoded({extended: true}))
 
 auth.post("/register", async (req, res)=>{
     try {
@@ -94,7 +95,7 @@ auth.post("/login", async (req, res)=>{
             return;
         }
 
-        const genToken = jwtToken.createToken(userDetails.email, userDetails.id);
+        const genToken = jwtToken.createTokenLogin(userDetails.email, userDetails.id, '48h');
         //console.log(genToken);
 
         const userTokenUpdate = await User.update({token: genToken}, {where: {email: email}})
@@ -151,6 +152,7 @@ auth.post("/forget-password", async (req, res)=>{
 })
 
 auth.post("/confirm-password", async (req, res)=>{
+    //console.log(req.body);
     try {
         const {token, password, cmpassword} = req.body;
         const obj = {token, password, cmpassword}
@@ -159,13 +161,18 @@ auth.post("/confirm-password", async (req, res)=>{
             Res.errorResponse(res, nullcheck, 400);
             return;
         }
+        if ((String(password).length <= 5)) {
+            //console.log(String(password).length);
+            Res.errorResponse(res, "Password lenght is less then 6 charecters", 400);
+            return
+        }
         if (String(password) !== String(cmpassword)) {
             Res.errorResponse(res, "Password and Confirm not match", 400);
             return;
         }
         const tokenData = jwtToken.tokenExtractor(token);
         if (tokenData.error) {
-            Res.errorResponse(res, tokenData.messag, 401)
+            res.send(`<h1> Token ${tokenData.messag} </h1>`)
             return;
         }
         const user = await User.findOne({where: {id: tokenData.id}});
@@ -174,7 +181,7 @@ auth.post("/confirm-password", async (req, res)=>{
             return;
         }
         if (!user.dataValues.temp_token || user.dataValues.temp_token !== token) {
-            Res.errorResponse(res, "Token revoked", 400)
+            res.send("<h1> Token Revoked </h1>")
             return;
         }
         const hashPass = await hashSync(password, 10);
@@ -183,8 +190,8 @@ auth.post("/confirm-password", async (req, res)=>{
             Res.errorResponse(res, "Password not update", 400);
             return;
         }
-        sendmail.sendMail(tokenData.email, "Password change successfully", `Hi ${user.dataValues.username}\nYour password change successfully`)
-        Res.successResponse(res, "Password change successfully");
+        sendmail.sendMail(user.dataValues.email, "Password change successfully", `Hi ${user.dataValues.username}\nYour password change successfully`)
+        res.render("confirmpassword")
     } catch (error) {
         console.log(error);
         Res.serverError(res, error.message)

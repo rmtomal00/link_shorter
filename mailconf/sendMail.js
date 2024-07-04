@@ -22,15 +22,23 @@ class SendMail{
     }
 
     async sendMail(email, subject, body){
-        const sendHistory = await this.prepare().sendMail({
-            to: email,
-            from: process.env.EMAIL,
-            subject: subject,
-            text: body
-        });
-        return {
-            emailId: sendHistory.messageId,
-            message: sendHistory.response
+        try {
+            const sendHistory = await this.prepare().sendMail({
+                to: email,
+                from: process.env.EMAIL,
+                subject: subject,
+                text: body
+            });
+            return {
+                emailId: sendHistory.messageId,
+                message: sendHistory.response
+            }
+        } catch (error) {
+            console.log(error);
+            return {
+                emailId: null,
+                message: null
+            }
         }
     }
 }

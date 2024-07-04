@@ -5,10 +5,12 @@ const JwtToken = require("../../Jwt/TokenExtractor");
 const Response = require("../../responseModel/response");
 const CreteUID = require("../../common/createUnique");
 const StoreLink = require("../../database/models/storelink");
+const NullChecker = require("../../common/nullChecker");
 
 const Jwt = new JwtToken()
 const Respon = new Response()
 const createUid = new CreteUID()
+const nullChecker = new NullChecker()
 const base_url = process.env.BASE_URL
 
 
@@ -30,12 +32,26 @@ users.post('/short-link', async(req, res)=>{
     try{
         const tokenData = Jwt.tokenExtractor(req.headers.authorization.split(" ")[1]);
 
-        const {userlink} = req.body
-        console.log();
+        var {userlink} = req.body
+
+        const obj = {Link: userlink}
+        const nullcheck = await nullChecker.check(obj)
+        if (nullcheck) {
+            Respon.errorResponse(res, nullcheck, 400);
+            return;
+        }
+        const regex = /https?:\/\/[^\s/$.?#].[^\s]*/d;
+        userlink = String(userlink).toLowerCase().trim()
+        if (!userlink.match(regex)) {
+            Respon.errorResponse(res, "You don't add the https:// or http:// in the link", 400);
+            return;
+        }
+        //console.log();
         const id = await createUid.getUID()
-        console.log(id);
+        //console.log(id);
         const link = base_url+"/"+id;
-        const storelink = await StoreLink.create({userId: tokenData.id, shortId: id, link: userlink});
+        console.log(link);
+        const storelink = await StoreLink.create({userId: tokenData.id, shortId: id, link: userlink, shortlink: link});
         if (!storelink || !storelink.dataValues) {
             Respon.errorResponse(res, "Link not store", 400);
             return;

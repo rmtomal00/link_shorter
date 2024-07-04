@@ -5,9 +5,13 @@ const Response = require('./responseModel/response');
 const User = require('./database/models/User');
 const users = require('./route/user/user');
 const StoreLink = require('./database/models/storelink');
+const Tracker = require('./database/models/tracker');
+const path = require('path')
 require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
+const base_url = process.env.BASE_URL;
+
 
 
 
@@ -16,11 +20,21 @@ app.use(express.json())
 const port = process.env.PORT || 3000
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.get('/test', async(req, res) => {
     res.send('Hello World!')
 });
 
+app.get('/forget-password', (req, res)=>{
+    const {token} = req.query
+    if (!token) {
+        res.send("<h1>Token is missing </h1>")
+        return;
+    }
+    res.render('forgetpassword', {id:token})
+})
 app.get("/verify", async (req, res)=>{
     console.log(req.query);
     try {
@@ -55,9 +69,12 @@ app.get("/verify", async (req, res)=>{
         ApiRes.serverError(res, error.message);
     }
 })
-app.get("/:id", async (req, res)=>{
+app.get("/:linkId", async (req, res)=>{
+    //console.log(req.params);
     try {
-        const {id} = req.params;
+        const {linkId} = req.params;
+        console.log(linkId);
+        id = linkId
         if (!id) {
             ApiRes.errorResponse(res, "Link not valid", 400);
             return;
@@ -95,6 +112,7 @@ app.get("/:id", async (req, res)=>{
             ApiRes.errorResponse(res, "Link not found", 404);
             return
         }
+        Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id})
         res.redirect(realLink);
     } catch (error) {
         console.log(error);

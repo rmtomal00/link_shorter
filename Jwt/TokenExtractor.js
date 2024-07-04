@@ -11,6 +11,12 @@ class JwtToken{
         return token;
     }
 
+    createTokenLogin(email, id, time){
+        const token = jwt.sign({email, id}, secret, {expiresIn: time})
+        //console.log(token);
+        return token;
+    }
+
     tokenExtractor(token){
         try {
             const data = jwt.verify(token, secret)

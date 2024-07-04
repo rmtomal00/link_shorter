@@ -11,7 +11,7 @@ const Tracker = sequelize.define("tracker",{
         unique: true
     },
     linkId:{
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false
     },
     ip:{
