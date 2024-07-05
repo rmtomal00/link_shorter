@@ -6,12 +6,16 @@ const Response = require("../../responseModel/response");
 const CreteUID = require("../../common/createUnique");
 const StoreLink = require("../../database/models/storelink");
 const NullChecker = require("../../common/nullChecker");
+const DailyHistory = require("../../service/DailyClick");
+const DateManager = require("../../common/dateManager");
 
 const Jwt = new JwtToken()
 const Respon = new Response()
 const createUid = new CreteUID()
 const nullChecker = new NullChecker()
 const base_url = process.env.BASE_URL
+const daily = new DailyHistory()
+const dataManager = new DateManager();
 
 
 users.use(e.json());
@@ -51,7 +55,7 @@ users.post('/short-link', async(req, res)=>{
         //console.log(id);
         const link = base_url+"/"+id;
         console.log(link);
-        const storelink = await StoreLink.create({userId: tokenData.id, shortId: id, link: userlink, shortlink: link});
+        const storelink = await StoreLink.create({userId: tokenData.id, shortId: id, link: userlink, shortlink: link, type: "website"});
         if (!storelink || !storelink.dataValues) {
             Respon.errorResponse(res, "Link not store", 400);
             return;
@@ -62,4 +66,77 @@ users.post('/short-link', async(req, res)=>{
         Respon.serverError(res, error.message);
     }
 })
+
+users.post("/get-history-daily", async (req, res)=>{
+    try {
+        const {startDate, endDate} = req.body
+        var token = req.headers.authorization;
+        const obj = {startDate, endDate, token}
+        const nullcheck = await nullChecker.check(obj)
+        //console.log(nullcheck);
+        if (nullcheck) {
+            Respon.errorResponse(res, nullcheck, 400);
+            return;
+        }
+        console.log(dataManager.checkDateFormat(startDate));
+        if (!dataManager.checkDateFormat(startDate) || !dataManager.checkDateFormat(endDate)) {
+            Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
+            return;
+        }
+        token = token.split(' ')[1];
+        const tokenData = Jwt.tokenExtractor(token);
+        if(tokenData.error){
+            Respon.errorResponse(res, tokenData.messag, 400);
+            return;
+        }
+        const userId = tokenData.id; const email = tokenData.email;
+        const stdate = new Date(startDate);
+        const edDate = new Date(endDate);
+        const UserClickData = await daily.dailyCount(stdate, edDate, {userId: userId})
+        console.log(UserClickData);
+        Respon.successResponse(res, "Successfully get data", UserClickData);
+    } catch (error) {
+        console.log(error);
+        Respon.serverError(res, error.message)
+    }
+})
+
+users.post("/get-history-based-url", async (req, res)=>{
+    try {
+        const {startDate, endDate, page} = req.body
+        var obj = {startDate, endDate, page};
+        const token = req.headers.authorization.split(" ")[1];
+        const nullcheck = await nullChecker.check(obj)
+        if (nullcheck) {
+            Respon.errorResponse(res, nullcheck, 400);
+            return;
+        }
+        if (!dataManager.checkDateFormat(startDate) || !dataManager.checkDateFormat(endDate)) {
+            Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
+            return;
+        }
+        const pages = Number(page)
+        //console.log(pages);
+        if (typeof(pages) !== 'number' || pages < 0) {
+            Respon.errorResponse(res, "Provided page number is not number or You provided less then 0", 400);
+            return;
+        }
+        const TokenData = Jwt.tokenExtractor(token);
+        const id = TokenData.id; const email = TokenData.email;
+        const skip = pages * 100;
+        const stdate = new Date(startDate);
+        const edDate = new Date(endDate);
+        const data = await daily.dailyCountByLinkId(stdate, edDate, {userId: id}, skip);
+        if (data.length == 0) {
+            Respon.errorResponse(res, `No data found for ${pages}`, 400);
+            return;
+        }
+        Respon.successResponse(res, "Successfully fetch data", data);
+    } catch (error) {
+        console.log(error);
+        Respon.serverError(res, error.message);
+    }
+})
+
+
 module.exports = users

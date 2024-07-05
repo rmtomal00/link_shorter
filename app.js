@@ -33,8 +33,13 @@ app.get('/forget-password', (req, res)=>{
         res.send("<h1>Token is missing </h1>")
         return;
     }
+    const data = tokenData.tokenExtractor(token);
+    if (data.error) {
+        res.send(`<h1>${data.messag}</h1>`)
+    }
     res.render('forgetpassword', {id:token})
 })
+
 app.get("/verify", async (req, res)=>{
     console.log(req.query);
     try {
@@ -112,7 +117,7 @@ app.get("/:linkId", async (req, res)=>{
             ApiRes.errorResponse(res, "Link not found", 404);
             return
         }
-        Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id})
+        Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId})
         res.redirect(realLink);
     } catch (error) {
         console.log(error);

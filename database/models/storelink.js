@@ -31,6 +31,10 @@ const StoreLink = sequelize.define("storelink", {
         type: Sequelize.DATE,
         defaultValue: Sequelize.NOW,
         allowNull: false
+    },
+    type:{
+        type: Sequelize.STRING,
+        allowNull: false
     }
 },{
     tableName: "storelink",
