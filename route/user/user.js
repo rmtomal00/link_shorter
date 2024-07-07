@@ -8,6 +8,9 @@ const StoreLink = require("../../database/models/storelink");
 const NullChecker = require("../../common/nullChecker");
 const DailyHistory = require("../../service/DailyClick");
 const DateManager = require("../../common/dateManager");
+const LinkDetails = require("../../service/LinkDetails");
+const UserSubscribtion = require("../../service/userSubscribtion");
+const AppSetting = require("../../database/models/appSetting");
 
 const Jwt = new JwtToken()
 const Respon = new Response()
@@ -16,6 +19,8 @@ const nullChecker = new NullChecker()
 const base_url = process.env.BASE_URL
 const daily = new DailyHistory()
 const dataManager = new DateManager();
+const linkDetails = new LinkDetails()
+const UserSubs = new UserSubscribtion();
 
 
 users.use(e.json());
@@ -94,7 +99,7 @@ users.post("/get-history-daily", async (req, res)=>{
         const edDate = new Date(endDate);
         const UserClickData = await daily.dailyCount(stdate, edDate, {userId: userId})
         console.log(UserClickData);
-        Respon.successResponse(res, "Successfully get data", UserClickData);
+        Respon.successResponse(res, "Successfully fetch data", UserClickData);
     } catch (error) {
         console.log(error);
         Respon.serverError(res, error.message)
@@ -104,7 +109,7 @@ users.post("/get-history-daily", async (req, res)=>{
 users.post("/get-history-based-url", async (req, res)=>{
     try {
         const {startDate, endDate, page} = req.body
-        var obj = {startDate, endDate, page};
+        var obj = {startDate, endDate};
         const token = req.headers.authorization.split(" ")[1];
         const nullcheck = await nullChecker.check(obj)
         if (nullcheck) {
@@ -115,7 +120,7 @@ users.post("/get-history-based-url", async (req, res)=>{
             Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
             return;
         }
-        const pages = Number(page)
+        const pages = page
         //console.log(pages);
         if (typeof(pages) !== 'number' || pages < 0) {
             Respon.errorResponse(res, "Provided page number is not number or You provided less then 0", 400);
@@ -138,5 +143,46 @@ users.post("/get-history-based-url", async (req, res)=>{
     }
 })
 
+users.post('/get-tracker-by-user', async (req, res)=>{
+    try {
+        const {startDate, endDate, page} = req.body
+        var obj = {startDate, endDate};
+        const token = req.headers.authorization.split(" ")[1];
+        const nullcheck = await nullChecker.check(obj)
+        if (nullcheck) {
+            Respon.errorResponse(res, nullcheck, 400);
+            return;
+        }
+        if (!dataManager.checkDateFormat(startDate) || !dataManager.checkDateFormat(endDate)) {
+            Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
+            return;
+        }
+        const pages = page
+        //console.log(pages);
+        if (typeof(pages) !== 'number' || pages < 0) {
+            Respon.errorResponse(res, "Provided page number is not number or You provided less then 0", 400);
+            return;
+        }
+        const TokenData = Jwt.tokenExtractor(token);
+        const id = TokenData.id; const email = TokenData.email;
+        const skip = pages * 100;
+        const stdate = new Date(startDate);
+        const edDate = new Date(endDate);
+        const checkUserMembership = await UserSubs.getUserSubscribtionData(id)
+        if (checkUserMembership.subscriber) {
+            var data = await linkDetails.getLinkHistoryByUserforPaid(id, stdate, edDate, skip);
+        }else{
+            data = await linkDetails.getLinkHistoryByUser(id, stdate, edDate, skip);
+        }
+        if (data.length == 0) {
+            Respon.errorResponse(res, `No data found for ${pages}`, 400);
+            return;
+        }
+        Respon.successResponse(res, "Successfully fetch data", data);
+    } catch (error) {
+        console.log(error);
+        Respon.serverError(res, error.messag)
+    }
+})
 
 module.exports = users

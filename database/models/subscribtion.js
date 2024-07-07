@@ -3,7 +3,7 @@ const sequelize = require("../db");
 
 
 
-const Subscribtion = sequelize.define("subscriber", {
+const Subscribtion = sequelize.define("subscribers", {
     id:{
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -29,15 +29,24 @@ const Subscribtion = sequelize.define("subscriber", {
         type: Sequelize.DATE,
         allowNull: true,
     },
-    lastUpadte:{
+    updatedAt:{
         type: Sequelize.DATE,
-        allowNull: true,
+        allowNull: false,
         defaultValue: Sequelize.NOW,
-        onUpdate: true
+        onUpdate: Sequelize.NOW
+    },
+    lastUpdate:{
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
+        onUpdate: Sequelize.NOW
     }
+
 },{
+    timestamps: true,
+    tableName: "subscribers",
     createdAt: "createAt",
-    updatedAt: 'lastUpdate'
+    updatedAt: 'updatedAt'
 })
 
 module.exports = Subscribtion

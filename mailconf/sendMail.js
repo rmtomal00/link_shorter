@@ -2,10 +2,9 @@ const mailer = require('nodemailer');
 require('dotenv').config()
 
 class SendMail{
-    constructor(){
-
-    }
-    prepare(){
+    constructor(){}
+    
+    #prepare(){
         return mailer.createTransport({
             host: process.env.HOST_EMAIL,
             port: process.env.PORT_EMAIL,
@@ -23,7 +22,7 @@ class SendMail{
 
     async sendMail(email, subject, body){
         try {
-            const sendHistory = await this.prepare().sendMail({
+            const sendHistory = await this.#prepare().sendMail({
                 to: email,
                 from: process.env.EMAIL,
                 subject: subject,

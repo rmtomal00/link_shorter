@@ -2,7 +2,9 @@ const StoreLink = require("../database/models/storelink");
 
 class CreteUID{
     constructor(){}
-    createUid(){
+
+    //private method
+    #createUid(){
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
         const charactersLength = characters.length;
@@ -17,7 +19,7 @@ class CreteUID{
     async getUID(){
         var bool = true;
         while(bool){
-            const linkId = this.createUid();
+            const linkId = this.#createUid();
             const find = await StoreLink.findOne({where: {shortId: linkId}});
             if (!find) {
                 bool = false;

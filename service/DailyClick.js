@@ -26,7 +26,7 @@ class DailyHistory{
             })
             return data
         } catch (error) {
-            throw(error.message);
+            throw(error);
         }
     }
 
@@ -55,7 +55,7 @@ class DailyHistory{
             //console.log(data);
             return data
         } catch (error) {
-            throw(error.message);
+            throw(error);
         }
     }
 }
