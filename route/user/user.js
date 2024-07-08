@@ -10,7 +10,6 @@ const DailyHistory = require("../../service/DailyClick");
 const DateManager = require("../../common/dateManager");
 const LinkDetails = require("../../service/LinkDetails");
 const UserSubscribtion = require("../../service/userSubscribtion");
-const AppSetting = require("../../database/models/appSetting");
 
 const Jwt = new JwtToken()
 const Respon = new Response()
@@ -55,7 +54,12 @@ users.post('/short-link', async(req, res)=>{
             Respon.errorResponse(res, "You don't add the https:// or http:// in the link", 400);
             return;
         }
-        //console.log();
+        const getStatus = await UserSubs.getUserStatusForLinkShort(tokenData.id)
+        console.log(getStatus);
+        if (getStatus) {
+            Respon.errorResponse(res, "You have complete your trile limit. Please Update your plan", 400);
+            return;
+        }
         const id = await createUid.getUID()
         //console.log(id);
         const link = base_url+"/"+id;

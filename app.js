@@ -6,7 +6,9 @@ const User = require('./database/models/User');
 const users = require('./route/user/user');
 const StoreLink = require('./database/models/storelink');
 const Tracker = require('./database/models/tracker');
-const path = require('path')
+const path = require('path');
+const ScheduleSystemsSubscribtion = require('./scheduleService/subscribtion');
+const DailyHistory = require('./service/DailyClick');
 require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
@@ -124,4 +126,7 @@ app.get("/:linkId", async (req, res)=>{
         ApiRes.serverError(res, error.message)
     }
 })
+new ScheduleSystemsSubscribtion().startSchedule()
+
+
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

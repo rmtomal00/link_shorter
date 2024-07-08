@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const Tracker = require("../database/models/tracker");
 const sequelize = require("../database/db");
+const StoreLink = require("../database/models/storelink");
 
 class DailyHistory{
     constructor(){}
@@ -51,6 +52,33 @@ class DailyHistory{
                 raw: true,
                 limit: 100,
                 offset: leave
+            })
+            console.log(data);
+            return data
+        } catch (error) {
+            throw(error);
+        }
+    }
+
+    async countShortLink(startDate, endDate, id){
+        try {
+            const data = await StoreLink.findAll({
+                attributes: [
+                    
+                    [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+                ],
+                where: {
+                    [Op.and]:[
+                        {createAt:{
+                            [Op.gte]: startDate,
+                            [Op.lt]: endDate,
+                            
+                        }},
+                        id
+                    ]          
+                },
+                raw: true,
+                limit: 100
             })
             //console.log(data);
             return data

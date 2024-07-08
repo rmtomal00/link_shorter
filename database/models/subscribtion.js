@@ -32,8 +32,7 @@ const Subscribtion = sequelize.define("subscribers", {
     updatedAt:{
         type: Sequelize.DATE,
         allowNull: false,
-        defaultValue: Sequelize.NOW,
-        onUpdate: Sequelize.NOW
+        defaultValue: Sequelize.NOW
     },
     lastUpdate:{
         type: Sequelize.DATE,
