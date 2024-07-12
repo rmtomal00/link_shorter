@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt</title>
+    <!-- Include jsPDF and html2canvas libraries from CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgb(241, 241, 241);
+        }
+        .maincontainer {
+            margin-top: 20px;
+            padding: 2%;
+            width: 80%;
+            max-width: 600px;
+            background-color: aliceblue;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            width: 100%;
+            padding: 20px 0;
+            background-color: rgb(18, 184, 54);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: aliceblue;
+        }
+        .logo {
+            font-size: 45px;
+            font-weight: bolder;
+            margin: 0;
+        }
+        .subtitle {
+            font-size: 15px;
+            margin: 0;
+        }
+        .digitalSign {
+            text-align: center;
+            font-size: 3px;
+            color: #ddd;
+        }
+        .heading {
+            text-align: center;
+        }
+        .itam-header {
+            border-bottom: 2px solid red;
+        }
+        ul {
+            padding: 0;
+            list-style-type: none;
+        }
+        li {
+            padding: 6px 0;
+            font-size: 16px;
+        }
+        span {
+            font-weight: bolder;
+        }
+        table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: rgb(255, 148, 148);
+        }
+        .button {
+            margin-top: 20px;
+        }
+        button {
+            background-color: rgb(18, 184, 54);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: rgb(255, 255, 255);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: rgb(0, 114, 25);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .maincontainer {
+                width: 90%;
+                padding: 4%;
+            }
+            .header {
+                padding: 10px 0;
+            }
+            .logo {
+                font-size: 35px;
+            }
+            .subtitle {
+                font-size: 12px;
+            }
+            li {
+                font-size: 14px;
+            }
+            table, th, td {
+                font-size: 14px;
+            }
+            .button{
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="maincontainer">
+        <div class="header">
+            <p class="logo">Team 71</p>
+            <p class="subtitle">Proper IT Solution</p>
+        </div>
+        <div class="container">
+            <p class="digitalSign" id="digitalsign"><%= data.digitalSign %></p>
+            <div class="userInfo">
+                <div class="itam-header">
+                    <p class="heading">User Information</p>
+                </div>
+                <div class="userdata">
+                    <ul>
+                        <li id="userphone"><span>User Phone: </span><%= data.userPhone %></li>
+                        <li id="userplan"><span>User Select Plan: </span><%= data.userPlan %></li>
+                        <li id="userid"><span>User ID: </span><%= data.userid %></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="transection">
+                <div class="itam-header">
+                    <p class="heading">Transaction Information</p>
+                </div>
+                <div class="userdata">
+                    <ul>
+                        <li id="litrxid"><span>Trx ID: </span><%= data.trxId %></li>
+                        <li id="lipaymentid"><span>Payment ID: </span><%= data.paymentId %></li>
+                        <li id="litrxstatus"><span>Trx Status: </span><%= data.trxStatus %></li>
+                        <li id="liinvoice"><span>Invoice ID: </span><%= data.invoiceId %></li>
+                        <li id="licur"><span>Currency: </span><%= data.currency %></li>
+                        <li id="ligateway"><span>Gateway: </span><%= data.gateway %></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="payment">
+                <div class="itam-header">
+                    <p class="heading">Total Payment</p>
+                </div>
+                <div class="paymentdata">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Plan Name</th>
+                                <th>Price</th>
+                                <th>Fee</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="tdpck"><%= data.planName %></td>
+                                <td id="tdpric"><%= data.price %></td>
+                                <td id="tdfee"><%= data.fee %></td>
+                                <td id="tdtotal"><%= data.total %></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="button">
+        <button onclick="downloadPdf()">Download Receipt</button>
+    </div>
+    <script>
+        async function downloadPdf() {
+            const { jsPDF } = window.jspdf;
+            const userdata = document.querySelector('.maincontainer');
+            
+            // Use html2canvas to capture the maincontainer div as an image
+            const canvas = await html2canvas(userdata, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            
+            // Create a new jsPDF instance
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            // Add the image to the PDF
+            const imgProps = doc.getImageProperties(imgData);
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            
+            // Save the PDF
+            doc.save('userdata.pdf');
+        }
+    </script>
+</body>
+</html>

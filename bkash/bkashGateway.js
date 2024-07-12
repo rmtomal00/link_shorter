@@ -69,6 +69,13 @@ class BkashGateway{
                     }
                 }
             )
+            if (Number(data.data.statusCode) != Number("0000")) {
+                return {
+                    responseData: data.data,
+                    err: true,
+                    msg: data.data.statusMessage
+                }
+            }
             const referenceData = JSON.parse(data.data.payerReference)
             const insertOnHistory = await PaymentHistory.create({
                 payId: data.data.trxID,

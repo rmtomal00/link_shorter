@@ -1,4 +1,3 @@
-const Sequelize = require("sequelize");
 const Subscribtion = require("../database/models/subscribtion");
 const DateManager = require("../common/dateManager");
 const cron = require('node-cron');
@@ -32,13 +31,13 @@ class ScheduleSystemsSubscribtion {
                             await Subscribtion.update({ plan: "free" }, { where: { userId: element.userId } });
                             continue;
                         } else {
-                            await Subscribtion.update({ lastUpdate: Sequelize.NOW}, { where: { userId: element.userId } });
+                            await Subscribtion.update({ lastUpdate: new Date()}, { where: { userId: element.userId } });
                         }
                         const lastUpdatePlan = new Date(element.lastUpdate);
                         const updateAtPlan = new Date(element.updateAt);
                         const daysfar = DateManage.daysBetween(updateAtPlan, lastUpdatePlan);
                         if (daysfar > 30) {
-                            await Subscribtion.update({ updateAt: Sequelize.NOW }, { where: { userId: element.userId } });
+                            await Subscribtion.update({ updateAt: new Date() }, { where: { userId: element.userId } });
                         }
                     }
                 }
@@ -48,7 +47,7 @@ class ScheduleSystemsSubscribtion {
 
     startSchedule() {
         console.log("Scheduler started");
-        cron.schedule('0 0 * * *', async () => { // Runs every day at midnight
+        cron.schedule('* * * * *', async () => { // Runs every day at midnight
             try {
                await this._updateUserSubs();
             } catch (error) {
