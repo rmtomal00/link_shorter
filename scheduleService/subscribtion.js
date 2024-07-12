@@ -9,6 +9,7 @@ class ScheduleSystemsSubscribtion {
     constructor() {}
 
     async _updateUserSubs() {
+        console.log("Subscrption schedule on");
         let size = 0;
         while (true) {
             const data = await Subscribtion.findAll({
@@ -47,7 +48,7 @@ class ScheduleSystemsSubscribtion {
 
     startSchedule() {
         console.log("Scheduler started");
-        cron.schedule('* */24 * * *', async () => { // Runs every day at midnight
+        cron.schedule('0 0 * * *', async () => { // Runs every day at midnight
             try {
                await this._updateUserSubs();
             } catch (error) {

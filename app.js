@@ -10,6 +10,8 @@ const path = require('path');
 const ScheduleSystemsSubscribtion = require('./scheduleService/subscribtion');
 const DailyHistory = require('./service/DailyClick');
 const BkashGateway = require('./bkash/bkashGateway');
+const subscription = require('./route/user/subscrib/subs');
+const payment = require('./route/paymentconfirm/paymentconfirm');
 require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
@@ -23,6 +25,8 @@ app.use(express.json())
 const port = process.env.PORT || 3000
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)
+app.use('/api/v1/users', subscription)
+app.use('/payment', payment);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 

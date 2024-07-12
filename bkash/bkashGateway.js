@@ -1,4 +1,5 @@
 const { default: axios } = require("axios");
+const PaymentHistory = require("../database/models/paymentHistory");
 require("dotenv").config()
 
 class BkashGateway{
@@ -12,20 +13,8 @@ class BkashGateway{
         
         try {
             let invoiceId = new Date().getTime()
-            const token = await axios.post(
-                "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
-                {
-                    app_key: this.#app_key,
-                    app_secret: this.#app_secret
-                },
-                {
-                    headers:{
-                        username: this.#username,
-                        password: this.#password
-                    }
-                }
-            );
             
+            const token = await this.#generateToken()
 
             const linkData = await axios.post(
                 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create',
@@ -50,7 +39,6 @@ class BkashGateway{
             //console.log(linkData.data);
             return {
                 err: false,
-                token: token.data.id_token,
                 paymentUrl: linkData.data.bkashURL,
                 paymentId: linkData.data.paymentID
             }
@@ -64,20 +52,33 @@ class BkashGateway{
 
     }
 
-    async excutePayment(payId, token){
+    async excutePayment(payId){
         try {
-            const data = axios.post(
+            const getToken = await this.#generateToken()
+            const token = getToken.data.id_token;
+            //console.log(token);
+            const data = await axios.post(
                 "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/execute",
                 {
                     paymentID: payId
                 },
                 {
-                    Authorization: token,
-                    "X-APP-Key": this.#app_key
+                    headers:{
+                        Authorization: token,
+                        "X-APP-Key": this.#app_key
+                    }
                 }
             )
+            const referenceData = JSON.parse(data.data.payerReference)
+            const insertOnHistory = await PaymentHistory.create({
+                payId: data.data.trxID,
+                amount: data.data.amount,
+                gatewayname: 'bkash',
+                userId: referenceData.userId,
+                plan: referenceData.plan
+            });
             return {
-                data,
+                responseData: data.data,
                 err: false
             };
         } catch (error) {
@@ -88,6 +89,25 @@ class BkashGateway{
             }
         }
     }
+
+    async #generateToken(){
+        const token = await axios.post(
+            "https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant",
+            {
+                app_key: this.#app_key,
+                app_secret: this.#app_secret
+            },
+            {
+                headers:{
+                    username: this.#username,
+                    password: this.#password
+                }
+            }
+        );
+
+        return token
+    }
 }
+
 
 module.exports = BkashGateway

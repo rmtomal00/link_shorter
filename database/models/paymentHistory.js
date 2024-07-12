@@ -2,49 +2,49 @@ const Sequelize  = require("sequelize");
 const sequelize = require("../db");
 
 
-
-const Subscribtion = sequelize.define("subscribers", {
+const PaymentHistory = sequelize.define("paymenthistory", {
     id:{
         type: Sequelize.INTEGER,
+        allowNull: false,
         autoIncrement: true,
-        unique: true,
         primaryKey: true,
-        allowNull: false
     },
     userId:{
         type: Sequelize.INTEGER,
         allowNull: false
     },
-    plan: {
+    amount:{
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    payId:{
         type: Sequelize.STRING,
-        allowNull: false,
-        defaultValue: "free"
+        unique: true,
+        allowNull: false
+        
+    },
+    gatewayname:{
+        type: Sequelize.STRING,
+        allowNull: false
     },
     createAt:{
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW
     },
-    valid:{
-        type: Sequelize.DATE,
-        allowNull: true,
-    },
-    updatedAt:{
+    updateAt:{
         type: Sequelize.DATE,
         allowNull: false,
+        onUpdate: Sequelize.NOW,
         defaultValue: Sequelize.NOW
     },
-    lastUpdate:{
-        type: Sequelize.DATE,
-        allowNull: false,
-        defaultValue: Sequelize.NOW
+    plan:{
+        type: Sequelize.STRING,
+        allowNull: false
     }
-
 },{
+    tableName: "paymenthistory",
     timestamps: false,
-    tableName: "subscribers",
-    //createdAt: "createAt",
-    //updatedAt: 'updatedAt'
-})
 
-module.exports = Subscribtion
+});
+module.exports = PaymentHistory;
