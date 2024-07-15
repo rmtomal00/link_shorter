@@ -1,6 +1,6 @@
 const express = require('express');
 const Response = require('../../responseModel/response');
-const BkashGateway = require('../../bkash/bkashGateway');
+const BkashGateway = require('../../paymentgateway/bkashGateway');
 const Subscribtion = require('../../database/models/subscribtion');
 const payment = express.Router()
 const path = require('path');

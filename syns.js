@@ -14,6 +14,7 @@ sequelize.sync({ force: true }).then(() => {
 });
 const User = require('./database/models/User');
 const AppSetting = require("./database/models/appSetting");
+const BinancePending = require("./database/models/binancepending");
 const PaymentHistory = require("./database/models/paymentHistory");
 const StoreLink = require("./database/models/storelink");
 const Subscribtion = require("./database/models/subscribtion");

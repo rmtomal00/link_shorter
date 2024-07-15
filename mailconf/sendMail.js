@@ -20,6 +20,27 @@ class SendMail{
         })
     }
 
+    async sendMailHtml(email, subject, body){
+        try {
+            const sendHistory = await this.#prepare().sendMail({
+                to: email,
+                from: process.env.EMAIL,
+                subject: subject,
+                html: body
+            });
+            return {
+                emailId: sendHistory.messageId,
+                message: sendHistory.response
+            }
+        } catch (error) {
+            console.log(error);
+            return {
+                emailId: null,
+                message: null
+            }
+        }
+    }
+
     async sendMail(email, subject, body){
         try {
             const sendHistory = await this.#prepare().sendMail({

@@ -9,9 +9,9 @@ const Tracker = require('./database/models/tracker');
 const path = require('path');
 const ScheduleSystemsSubscribtion = require('./scheduleService/subscribtion');
 const DailyHistory = require('./service/DailyClick');
-const BkashGateway = require('./bkash/bkashGateway');
 const subscription = require('./route/user/subscrib/subs');
 const payment = require('./route/paymentconfirm/paymentconfirm');
+const BinancePaymentStatus = require('./scheduleService/binancepaymentstatus');
 require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
@@ -132,5 +132,6 @@ app.get("/:linkId", async (req, res)=>{
     }
 })
 new ScheduleSystemsSubscribtion().startSchedule()
+new BinancePaymentStatus().startCronr()
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

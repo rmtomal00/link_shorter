@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binance Receipt</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .header {
+            background-color: rgb(18, 184, 54);
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .header .logo {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .header .subtitle {
+            font-size: 16px;
+            margin: 0;
+        }
+        .body {
+            padding: 20px;
+            text-align: left;
+        }
+        .body p {
+            margin: 0 0 10px;
+        }
+        .body .username {
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .body .emailbody {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .body ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        .body ul li {
+            margin-bottom: 5px;
+        }
+        .body ul li span {
+            font-weight: bold;
+        }
+        .contact {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .contact h5 {
+            margin: 0 10px 0 0;
+            font-size: 16px;
+        }
+        .contact a {
+            color: rgb(18, 184, 54);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f1f1f1;
+            text-align: center;
+        }
+        .footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <p class="logo">Team 71</p>
+            <p class="subtitle">Proper IT Solution</p>
+        </div>
+        <div class="body">
+            <p class="username">Hi <%=username%>,</p>
+            <p class="emailbody">
+                Thank you for using our service.<br>
+                Recently you made a payment using Binance Pay. We are confirming that we have received your payment.<br>
+                Here is the summary of your payment:
+            </p>
+            <ul>
+                <li><span>Plan:</span> <%=plan%></li>
+                <li><span>Trx Id:</span> <%=merchantTradeNo%></li>
+                <li><span>Currency:</span> <%=currency%></li>
+                <li><span>Amount:</span> <%=orderAmount%></li>
+            </ul>
+            <p class="emailbody">
+                If you have any questions, feel free to contact us.
+            </p>
+            <div class="contact">
+                <h5>Contact on WhatsApp:</h5>
+                <a href="https://wa.me/+8801738619197">Click here</a>
+            </div>
+            <p class="emailbody">
+                Best regards,<br>
+                <span class="company">Team 71</span>
+            </p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Team 71. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
