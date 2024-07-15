@@ -51,10 +51,10 @@ subscription.post("/get-subcription-international", async (req, res)=>{
             Respon.errorResponse(res, "amount can't be null or not be string", 400);
             return;
         }
-        if (amount != 4 && amount != 8) {
-            Respon.errorResponse(res, "amount should be 4 or 8", 400);
-            return;
-        }
+        // if (amount != 4 && amount != 8) {
+        //     Respon.errorResponse(res, "amount should be 4 or 8", 400);
+        //     return;
+        // }
         const JwtToken = req.headers.authorization.split(' ')[1];
         const tokenData = Jwt.tokenExtractor(JwtToken);
         const userId = tokenData.id;

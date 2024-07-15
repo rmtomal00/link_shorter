@@ -50,8 +50,8 @@ payment.all("/excute", async (req, res)=>{
             //console.log("change pack");
             updatePack = await Subscribtion.update({
                 plan: paymentReference.plan,
-                lastUpdate: new Date(),
-                updatedAt: new Date(),
+                lastUpdate: new Date().getTime(),
+                updatedAt: new Date().getTime(),
                 valid: new Date().getTime() + 30*24*60*60*1000
             },{
                 where: {userId: paymentReference.userId}

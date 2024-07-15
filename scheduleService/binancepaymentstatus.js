@@ -53,6 +53,7 @@ class BinancePaymentStatus{
                             raw: true
                         })
                         if ( String(oldPlan.plan).toLocaleLowerCase().trim() === String(plan).toLocaleLowerCase().trim()) {
+                            console.log("old subscriber");
                             await Subscribtion.update({
                                 plan: String(oldPlan.plan).toLocaleLowerCase().trim(),
                                 valid: new Date().getTime() + 30*24*60*60*1000
@@ -60,10 +61,11 @@ class BinancePaymentStatus{
                                 where: {userId: userData.userId}
                             });
                         }else{
+                            console.log("new subscriber");
                             await Subscribtion.update({
                                 plan: plan,
-                                lastUpdate: new Date(),
-                                updatedAt: new Date(),
+                                lastUpdate: new Date().getTime(),
+                                updatedAt: new Date().getTime(),
                                 valid: new Date().getTime() + 30*24*60*60*1000
                             },{
                                 where: {userId: userData.userId}

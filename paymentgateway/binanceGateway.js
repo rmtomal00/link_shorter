@@ -70,14 +70,17 @@ class BinanceGateway{
                 }
             )
             const resData = data.data.data
-            //console.log(resData);
+            console.log(resData.paymentInfo);
+            const plan = resData.orderAmount == 8 ? "platinum": 'gold';
+            console.log(plan);
 
             if(resData.status === "PAID"){
                 await PaymentHistory.create({
                     userId,
                     payId: resData.merchantTradeNo,
                     amount: resData.orderAmount,
-                    gatewayname: "Binance"
+                    gatewayname: "Binance",
+                    plan: plan
                 })
             }
             return resData

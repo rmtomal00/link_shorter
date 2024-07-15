@@ -14,7 +14,7 @@ const PaymentHistory = sequelize.define("paymenthistory", {
         allowNull: false
     },
     amount:{
-        type: Sequelize.INTEGER,
+        type: Sequelize.DOUBLE,
         allowNull: false
     },
     payId:{

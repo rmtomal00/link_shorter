@@ -25,19 +25,19 @@ class ScheduleSystemsSubscribtion {
                 for (let index = 0; index < data.length; index++) {
                     const element = data[index];
                     if (String(element.plan).toLocaleLowerCase().trim() !== "free") {
-                        const lastdate = new Date();
+                        const lastdate = new Date().getTime();
                         const validity = new Date(element.valid);
                         if (lastdate > validity) {
                             await Subscribtion.update({ plan: "free" }, { where: { userId: element.userId } });
                             continue;
                         } else {
-                            await Subscribtion.update({ lastUpdate: new Date()}, { where: { userId: element.userId } });
+                            await Subscribtion.update({ lastUpdate: new Date().getTime()}, { where: { userId: element.userId } });
                         }
                         const lastUpdatePlan = new Date(element.lastUpdate);
                         const updateAtPlan = new Date(element.updateAt);
                         const daysfar = DateManage.daysBetween(updateAtPlan, lastUpdatePlan);
                         if (daysfar > 30) {
-                            await Subscribtion.update({ updateAt: new Date() }, { where: { userId: element.userId } });
+                            await Subscribtion.update({ updateAt: new Date().getTime() }, { where: { userId: element.userId } });
                         }
                     }
                 }
