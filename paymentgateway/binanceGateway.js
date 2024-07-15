@@ -70,7 +70,7 @@ class BinanceGateway{
                 }
             )
             const resData = data.data.data
-            console.log(resData);
+            //console.log(resData);
 
             if(resData.status === "PAID"){
                 await PaymentHistory.create({

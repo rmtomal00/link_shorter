@@ -23,7 +23,7 @@ class BinancePaymentStatus{
                 limit:100,
                 raw: true
             });
-            console.log(getpending);
+            //console.log(getpending);
             if (getpending.length <= 0) {
                 size = 0;
                 break;
@@ -84,8 +84,13 @@ class BinancePaymentStatus{
                         }
                 
                         const htmlContent = getHtmlEjs.getEjsToHtml(allData, "binancerecipent.ejs", "../views")
-                        console.log(htmlContent);
+                        //console.log(htmlContent);
                         MailSender.sendMailHtml(user.email, "Payment Receive Confirmation", htmlContent)
+                        await BinancePending.destroy({
+                            where: {
+                                id: userData.id
+                            }
+                        })
                     }
                 }
             }
