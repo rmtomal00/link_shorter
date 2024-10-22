@@ -35,6 +35,16 @@ const StoreLink = sequelize.define("storelink", {
     type:{
         type: Sequelize.STRING,
         allowNull: false
+    },
+    click:{
+        type: Sequelize.BIGINT,
+        defaultValue: 0,
+        allowNull: false
+    },
+    unique_click:{
+        type: Sequelize.BIGINT,
+        defaultValue: 0,
+        allowNull: false
     }
 },{
     tableName: "storelink",

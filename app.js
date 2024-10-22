@@ -16,12 +16,17 @@ require("dotenv").config()
 const tokenData = new JwtToken();
 const ApiRes = new Response();
 const base_url = process.env.BASE_URL;
+const cors = require('cors')
+var cookieParser = require('cookie-parser');
+const { where } = require('sequelize');
 
 
 
 
 const app = express()
 app.use(express.json())
+app.use(cookieParser("letTest"))
+app.use(cors())
 const port = process.env.PORT || 3000
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)
@@ -85,14 +90,13 @@ app.get("/:linkId", async (req, res)=>{
     //console.log(req.params);
     try {
         const {linkId} = req.params;
-        console.log(linkId);
+        const getCookiess = req.cookies[linkId]
         id = linkId
         if (!id) {
             ApiRes.errorResponse(res, "Link not valid", 400);
             return;
         }
         var deviceData = req.headers['user-agent']
-        console.log(deviceData);
         var device = "";
         var bool = false
         for (let index = 0; index < deviceData.length; index++) {
@@ -101,14 +105,12 @@ app.get("/:linkId", async (req, res)=>{
             }
             if (bool) {
                 if (!(deviceData[index]==="(") && !(deviceData[index]===")")) {
-                    //console.log("b");
                     device += deviceData[index]
                 }
             }
             if (deviceData[index]===")") {
                 break
             }
-            //console.log(device);
         }
         const ip = req.socket.remoteAddress
         //console.log(device);
@@ -124,7 +126,17 @@ app.get("/:linkId", async (req, res)=>{
             ApiRes.errorResponse(res, "Link not found", 404);
             return
         }
-        Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId})
+        if (getCookiess) {
+            Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId, unique_click:0})
+            data.click += 1;
+            StoreLink.update({click: data.click},{where: {shortId: linkId}})
+        }else{
+            Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId, unique_click:1})
+            data.click += 1;
+            data.unique_click += 1;
+            StoreLink.update({click: data.click, unique_click: data.unique_click },{where: {shortId: linkId}})
+        }
+        res.cookie(linkId, linkId)
         res.redirect(realLink);
     } catch (error) {
         console.log(error);

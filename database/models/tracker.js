@@ -31,6 +31,11 @@ const Tracker = sequelize.define("tracker",{
         type: Sequelize.STRING,
         allowNull: false
     },
+    unique_click:{
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+    },
     userId:{
         type: Sequelize.INTEGER,
         allowNull: false

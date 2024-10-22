@@ -22,3 +22,9 @@ const Tracker = require("./database/models/tracker");
 
 User.hasOne(Subscribtion, {foreignKey: "userId"});
 Subscribtion.belongsTo(User, {foreignKey: "userId"})
+
+User.hasOne(Tracker, {foreignKey: "userId"});
+Tracker.belongsTo(User, {foreignKey: "userId"})
+
+User.hasOne(StoreLink, {foreignKey: "userId"});
+StoreLink.belongsTo(User, {foreignKey: "userId"})

@@ -5,18 +5,26 @@ class SendMail{
     constructor(){}
     
     #prepare(){
+        // return mailer.createTransport({
+        //     host: process.env.HOST_EMAIL,
+        //     port: process.env.PORT_EMAIL,
+        //     auth:{
+        //         user: process.env.EMAIL,
+        //         pass: process.env.PASSWORD_EMAIL
+        //     },
+        //     sender: process.env.EMAIL,
+        //     tls:{
+        //         rejectUnauthorized: false
+        //     },
+        //     secure: true
+        // })
+
         return mailer.createTransport({
-            host: process.env.HOST_EMAIL,
-            port: process.env.PORT_EMAIL,
+            service: 'gmail',
             auth:{
-                user: process.env.EMAIL,
-                pass: process.env.PASSWORD_EMAIL
-            },
-            sender: process.env.EMAIL,
-            tls:{
-                rejectUnauthorized: false
-            },
-            secure: true
+                user: "noreply.team71@gmail.com",
+                pass: 'ppsd eeoj qrdy ggsa'
+            }
         })
     }
 
