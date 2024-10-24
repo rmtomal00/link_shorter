@@ -227,5 +227,32 @@ auth.get("/resend-email-verification", async(req, res)=>{
         Res.serverError(res, error.message);
     }
 })
-
+auth.all('/token-check',async (req, res)=>{
+    try {
+        var {token} = req.body;
+        token = String(token).trim()
+        console.log(token);
+        
+        if (!token) {
+            Res.errorResponse(res, "Token can't be empty", 400)
+            return
+        }
+        const data = jwtToken.tokenExtractor(token);
+        if (!data) {
+            Res.errorResponse(res, "Token is not generate by us", 400)
+            return
+        }
+        const userData = await User.findOne({where: {id: data.id}})
+        console.log(userData.dataValues.token !== token);
+        
+        if(userData.dataValues.token !== token){
+            Res.errorResponse(res, "Token revoked", 400)
+            return
+        }
+        Res.successResponse(res, "Token is successfully checked");
+    } catch (error) {
+        console.log(error);
+        Res.serverError(res, error.messag)
+    }
+})
 module.exports = auth

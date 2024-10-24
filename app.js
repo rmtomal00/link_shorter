@@ -26,7 +26,11 @@ const { where } = require('sequelize');
 const app = express()
 app.use(express.json())
 app.use(cookieParser("letTest"))
-app.use(cors())
+app.use(cors({
+    origin: '*', // Replace with your frontend URL or use '*' to allow all
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify the allowed methods
+    allowedHeaders: ['Authorization', 'Content-Type'] // Specify the allowed headers
+  }))
 const port = process.env.PORT || 3000
 app.use('/api/v1/auth', auth)
 app.use('/api/v1/users', users)

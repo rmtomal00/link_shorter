@@ -1,6 +1,10 @@
 const AppSetting = require("../database/models/appSetting");
 const Subscribtion = require("../database/models/subscribtion");
 const DailyHistory = require("./DailyClick");
+const UserProfile = require("./UserProfile");
+const {startOfMonth, endOfMonth, format} = require('date-fns')
+
+const UserProfiles = new UserProfile()
 
 class UserSubscribtion{
     constructor(){}
@@ -51,11 +55,13 @@ class UserSubscribtion{
             where: {packname: userSubsData.plan},
             raw: true
         })
-        console.log(planData.total);
-
-        const getTotalShortLink = await new DailyHistory().countShortLink(new Date(userSubsData.updatedAt)-(12*3600*1000), new Date(userSubsData.lastUpdate).getTime()+(12*60*60*1000), {userId: id})
+        const today = new Date()
+        const startDate = startOfMonth(today)
+        const endDate = endOfMonth(today)
+        
+        const getTotalShortLink = await UserProfiles.countTotalShortLinkMonth(startDate, endDate, {userId: id})
         console.log(getTotalShortLink);
-        if (planData.total < getTotalShortLink[0].count) {
+        if (planData.total <= getTotalShortLink.count) {
             return true
         }
         return false

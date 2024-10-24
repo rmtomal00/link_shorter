@@ -10,6 +10,9 @@ const DailyHistory = require("../../service/DailyClick");
 const DateManager = require("../../common/dateManager");
 const LinkDetails = require("../../service/LinkDetails");
 const UserSubscribtion = require("../../service/userSubscribtion");
+const UserProfile = require("../../service/UserProfile");
+const {createHandler} = require('graphql-http')
+const {startOfMonth, endOfMonth, format,} = require("date-fns")
 
 const Jwt = new JwtToken()
 const Respon = new Response()
@@ -17,9 +20,10 @@ const createUid = new CreteUID()
 const nullChecker = new NullChecker()
 const base_url = process.env.BASE_URL
 const daily = new DailyHistory()
-const dataManager = new DateManager();
+const dateManager= new DateManager();
 const linkDetails = new LinkDetails()
 const UserSubs = new UserSubscribtion();
+const UserProfiles = new UserProfile();
 
 
 users.use(e.json());
@@ -27,12 +31,27 @@ users.use(middleware);
 
 users.post("/user-profile", async (req, res)=>{
     try {
-        const token = req.headers.authorization.split()[1];
-        const tokenData =Jwt.tokenExtractor(token)
+        const token = req.headers.authorization.split(" ")[1];
+        const tokenData =Jwt.tokenExtractor(token.trim());
+
+        //userData get from diffrent
+        const userData = await UserProfiles.getUserProfile(tokenData.id);
+        const userSubscribtion = await UserSubs.getUserSubscribtionDataAllDetails(tokenData.id)
+        const date = new Date();
+        const startMonth = format(startOfMonth(date), "yyyy-MM-dd");
+        const endMonth = format(endOfMonth(date), "yyyy-MM-dd")
+        const totalShortLinkMonth = await UserProfiles.countTotalShortLinkMonth(startMonth, endMonth, {userId: tokenData.id})
+        console.log(totalShortLinkMonth);
         
+        const userProfile = {
+            userData,
+            totalShortLinkMonth,
+            userSubscribtion
+        }
+        Respon.successResponse(res, "User Profile get successfully", userProfile);
     } catch (error) {
         console.log(error);
-        
+        Respon.serverError(res, error.message)
     }
     
 })
@@ -87,8 +106,8 @@ users.post("/get-history-daily", async (req, res)=>{
             Respon.errorResponse(res, nullcheck, 400);
             return;
         }
-        console.log(dataManager.checkDateFormat(startDate));
-        if (!dataManager.checkDateFormat(startDate) || !dataManager.checkDateFormat(endDate)) {
+        console.log(dateManager.checkDateFormat(startDate));
+        if (!dateManager.checkDateFormat(startDate) || !dateManager.checkDateFormat(endDate)) {
             Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
             return;
         }
@@ -102,7 +121,6 @@ users.post("/get-history-daily", async (req, res)=>{
         const stdate = new Date(startDate);
         const edDate = new Date(endDate);
         const UserClickData = await daily.dailyCount(stdate, edDate, {userId: userId})
-        console.log(UserClickData);
         Respon.successResponse(res, "Successfully fetch data", UserClickData);
     } catch (error) {
         console.log(error);
@@ -120,7 +138,7 @@ users.post("/get-history-based-url", async (req, res)=>{
             Respon.errorResponse(res, nullcheck, 400);
             return;
         }
-        if (!dataManager.checkDateFormat(startDate) || !dataManager.checkDateFormat(endDate)) {
+        if (!dateManager.checkDateFormat(startDate) || !dateManager.checkDateFormat(endDate)) {
             Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
             return;
         }
@@ -157,7 +175,7 @@ users.post('/get-tracker-by-user', async (req, res)=>{
             Respon.errorResponse(res, nullcheck, 400);
             return;
         }
-        if (!dataManager.checkDateFormat(startDate) || !dataManager.checkDateFormat(endDate)) {
+        if (!dateManager.checkDateFormat(startDate) || !dateManager.checkDateFormat(endDate)) {
             Respon.errorResponse(res, "Data format invalid, It should be like yyyy-mm-dd", 400);
             return;
         }
@@ -186,6 +204,60 @@ users.post('/get-tracker-by-user', async (req, res)=>{
     } catch (error) {
         console.log(error);
         Respon.serverError(res, error.messag)
+    }
+})
+
+users.post("/get-link-history", async (req, res)=>{
+    try {
+        
+        const {startDate, endDate} = req.body;
+        if (!startDate || !endDate) {
+            Respon.errorResponse(res, "Start and End date can't be empty", 400)
+            return
+        }
+
+        if(!dateManager.checkDateFormat(startDate) || !dateManager.checkDateFormat(endDate)){
+            Respon.errorResponse(res, "Date format should be yyyy-mm-dd", 400)
+            return
+        }
+        const token = req.headers.authorization.split(" ")[1];
+        const userId = Jwt.tokenExtractor(token).id
+
+        const data = await daily.getShortLinkWithDetails(startDate, endDate, {userId: userId})
+        const click = await daily.getCountClick(startDate, endDate, {userId: userId})
+        const readyData = {
+            click,
+            data
+        }
+        Respon.successResponse(res, "Successfully get data", readyData);
+    } catch (error) {
+        console.log(error);
+        Respon.serverError(res, error.message)
+    }
+})
+
+users.post('/get-link-history-chunk', async (req, res)=>{
+    try {
+        const token = req.headers.authorization.split(' ')[1]
+        const {startDate, endDate, leave} = req.body
+        if (!startDate || !endDate || !String(leave) || !token){
+            Respon.errorResponse(res, "startDate and end date leave can't be null", 400)
+            return
+        }
+        if(!dateManager.checkDateFormat(startDate) || !dateManager.checkDateFormat(endDate)){
+            Respon.errorResponse(res, "Date should be in yyyy-mm-dd format", 400)
+            return;
+        }
+        const userId  = Jwt.tokenExtractor(token).id;
+        const userdata = await daily.getShortLinkWithDetails(startDate, endDate, {userId: userId}, Number(leave));
+        if (userdata.length == 0) {
+            Respon.errorResponse(res, "No more data exist", 200)
+            return;
+        }
+        Respon.successResponse(res, "Successfully get data", userdata)
+    } catch (error) {
+        console.log(error);
+        Respon.serverError(res, error.message)
     }
 })
 
