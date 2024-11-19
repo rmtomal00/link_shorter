@@ -1,21 +1,22 @@
 const { Op } = require("sequelize");
 const sequelize = require("../database/db");
 const Tracker = require("../database/models/tracker");
+const {format} = require("date-fns")
 
 class LinkDetails{
     constructor(){}
 
-    async getLinkHistoryByUserforPaid(userId, startDate, endDate, skip){
+    async getLinkHistoryByUserforPaid(startDate, endDate, skip, ...findObject){
         try {
             const data = await Tracker.findAll({
-                attributes:["id", "userId", "link", 'linkId', "createAt", "ip"],
+                attributes:["id", "userId", "link", "createAt", "ip", "click_device", "unique_click"],
                 where:{
                     [Op.and]:[
                         {createAt:{
                             [Op.gte]: startDate,
                             [Op.lt]: endDate
                         }},
-                        {userId: userId}
+                        ...findObject
                     ]
                 },
                 limit: 100,
@@ -23,18 +24,26 @@ class LinkDetails{
                 raw: true
             })
             //console.log(data);
-            return data;
+            return data.map((link, index) => ({
+                "ID": skip + index +1,
+                "USER ID": link.userId,
+                "LINK": link.link,
+                "IP": link.ip,
+                "TIME": format(link.createAt, 'dd.MM.yyyy HH:mm:ss'),
+                "DEVICE": link.click_device,
+                "UNIQUE CLICK": link.unique_click === 1 ? "Yes" : "No"
+            }))
         } catch (error) {
             //console.log(error);
             throw (error)
         }
     }
 
-    async getLinkHistoryByUser(userId, startDate, endDate, skip){
+    async getLinkHistoryByUser( startDate, endDate, skip, ...findObject){
         try {
             const data = await Tracker.findAll({
                 attributes:[
-                  "id", "userid", "link"
+                  "id", "userId", "link"
                 ],
                 where:{
                     [Op.and]:[
@@ -42,7 +51,7 @@ class LinkDetails{
                             [Op.gte]: startDate,
                             [Op.lt]: endDate
                         }},
-                        {userId: userId}
+                        ...findObject
                     ]
                 },
                 limit: 100,
@@ -50,7 +59,16 @@ class LinkDetails{
                 raw: true
             })
             //console.log(data);
-            return data;
+            return data.map((link, index) => ({
+                "ID": skip + index +1,
+                "USER ID": link.userId,
+                "LINK": link.link,
+                "IP": "Subscription Required",
+                "TIME": "Subscription Required",
+                "DEVICE": "Subscription Required",
+                "UNIQUE CLICK": "Subscription Required"
+            }))
+
         } catch (error) {
             //console.log(error);
             throw (error)

@@ -20,7 +20,7 @@ class DailyHistory{
                     [Op.and]:[
                         {createAt:{
                             [Op.gte]: startdate,
-                            [Op.lt]: lastdate,
+                            [Op.lte]: lastdate,
                             
                         }},
                         findObject
@@ -112,8 +112,8 @@ class DailyHistory{
                 offset: leave
             })
             //console.log(data);
-            var customKey = await data.map(object=>({
-                ID: object.id,
+            return data.map((object, index) => ({
+                ID: leave + index +1,
                 LINK: object.link,
                 "SHORT ID": object.shortId,
                 "SHORT LINK": object.shortlink,
@@ -122,14 +122,13 @@ class DailyHistory{
                 CLICK: object.click,
                 "UNIQUE CLICK": object.unique_click
             }))
-            return customKey
         } catch (error) {
             throw(error);
         }
     }
 
     /*find object should be an json object {userId: id} etc*/
-    async getCountClick(startDate, endDate, findObject){
+    async getCountClick(startDate, endDate, ...findObject){
         try {
             var totalClick = 0;
             var unique_click = 0;
@@ -142,7 +141,7 @@ class DailyHistory{
                             [Op.lt]: endDate,
                             
                         }},
-                        findObject
+                        ...findObject
                     ]          
                 },
                 attributes: ['click','unique_click'],

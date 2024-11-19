@@ -49,7 +49,7 @@ auth.post("/register", async (req, res)=>{
         }
         const hash = hashSync(password, 10)
         const createUser = await User.create({username, email, password: hash})
-        await Subscribtion.create({userId: createUser.dataValues.id, })
+        await Subscribtion.create({userId: createUser.dataValues.id})
         const token = jwtToken.createToken(null, createUser.dataValues.id)
         const url = `${base_url}/verify?token=${token}`;
         const mail = sendmail.sendMail(email, "Verify email from Team71.link", url);

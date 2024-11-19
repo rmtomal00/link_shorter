@@ -47,6 +47,11 @@ const StoreLink = sequelize.define("storelink", {
         allowNull: false
     }
 },{
+    indexes: [
+        {fields: ["userId", "unique_click"],},
+        {fields: ["userId"]},
+        {fields: ["shortId"]}
+    ],
     tableName: "storelink",
     createdAt: "createAt",
     timestamps: true

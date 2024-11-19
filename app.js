@@ -116,8 +116,9 @@ app.get("/:linkId", async (req, res)=>{
                 break
             }
         }
-        const ip = req.socket.remoteAddress
-        //console.log(device);
+        //const ip = req.socket.remoteAddress.split(':')[1];
+        const ip = req.socket.remoteAddress.split(':').pop();
+
         
         const idData = await StoreLink.findOne({where: {shortId: id}});
         if(!idData){
@@ -130,12 +131,21 @@ app.get("/:linkId", async (req, res)=>{
             ApiRes.errorResponse(res, "Link not found", 404);
             return
         }
+        try {
+            const response = await fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`).then(res => res.json())
+
+            var userCountry = response['country'];
+            userCountry = !userCountry ? "Unknown" : userCountry;
+        }catch (e) {
+            console.log(e)
+            userCountry = "Unknown"
+        }
         if (getCookiess) {
-            Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId, unique_click:0})
+            Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId, unique_click:0, country: userCountry})
             data.click += 1;
             StoreLink.update({click: data.click},{where: {shortId: linkId}})
         }else{
-            Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId, unique_click:1})
+            Tracker.create({linkId: id, ip: ip, click_device: device, link: base_url+"/"+id, userId: userId, unique_click:1, country: userCountry})
             data.click += 1;
             data.unique_click += 1;
             StoreLink.update({click: data.click, unique_click: data.unique_click },{where: {shortId: linkId}})

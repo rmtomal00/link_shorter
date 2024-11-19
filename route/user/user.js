@@ -12,7 +12,7 @@ const LinkDetails = require("../../service/LinkDetails");
 const UserSubscribtion = require("../../service/userSubscribtion");
 const UserProfile = require("../../service/UserProfile");
 const {createHandler} = require('graphql-http')
-const {startOfMonth, endOfMonth, format,} = require("date-fns")
+const {startOfMonth, endOfMonth, format, startOfYear, endOfYear} = require("date-fns")
 
 const Jwt = new JwtToken()
 const Respon = new Response()
@@ -191,12 +191,13 @@ users.post('/get-tracker-by-user', async (req, res)=>{
         const stdate = new Date(startDate);
         const edDate = new Date(endDate);
         const checkUserMembership = await UserSubs.getUserSubscribtionData(id)
+        var data
         if (checkUserMembership.subscriber) {
-            var data = await linkDetails.getLinkHistoryByUserforPaid(id, stdate, edDate, skip);
+            data = await linkDetails.getLinkHistoryByUserforPaid( stdate, edDate, skip, {userId: id});
         }else{
-            data = await linkDetails.getLinkHistoryByUser(id, stdate, edDate, skip);
+            data = await linkDetails.getLinkHistoryByUser( stdate, edDate, skip, {userId: id});
         }
-        if (data.length == 0) {
+        if (data.length === 0) {
             Respon.errorResponse(res, `No data found for ${pages}`, 400);
             return;
         }
@@ -257,6 +258,38 @@ users.post('/get-link-history-chunk', async (req, res)=>{
         Respon.successResponse(res, "Successfully get data", userdata)
     } catch (error) {
         console.log(error);
+        Respon.serverError(res, error.message)
+    }
+})
+
+users.post('/get-data-history-page', async (req, res)=>{
+    const {linkId, skip} = req.body;
+    const token = req.headers.authorization.split(' ')[1]
+    try{
+        console.log(skip < 0)
+        if (!linkId || !(typeof skip === "number" && skip >= 0)){
+            Respon.errorResponse(res, "LinkId not valid or not added skip or skip is not a number", 400)
+            return;
+        }
+        let userId = Jwt.tokenExtractor(token).id;
+        if (!userId){
+            Respon.errorResponse(res, "UserId not found", 400)
+            return;
+        }
+        const userSubscription = await UserSubs.getUserSubscribtionData(userId);
+
+        const startDate = startOfYear(Date.now())
+        const endDate = endOfYear(Date.now());
+        const totalClick = await daily.getCountClick(startDate, endDate, {userId: userId}, {shortId: linkId});
+        if (userSubscription.subscriber){
+            const linkHisData =  await linkDetails.getLinkHistoryByUserforPaid( startDate, endDate, skip, {userId: userId}, {linkId: linkId})
+            Respon.successResponse(res, "Successfully get paid user data", {clickData: totalClick, linkData: linkHisData})
+        }else{
+            const linkHisData =  await linkDetails.getLinkHistoryByUser(startDate, endDate, skip, {userId: userId}, {linkId: linkId})
+            Respon.successResponse(res, "Successfully get free user data", {clickData: totalClick, linkData: linkHisData})
+        }
+    }catch (error) {
+        console.log(error)
         Respon.serverError(res, error.message)
     }
 })

@@ -5,27 +5,27 @@ class SendMail{
     constructor(){}
     
     #prepare(){
-        // return mailer.createTransport({
-        //     host: process.env.HOST_EMAIL,
-        //     port: process.env.PORT_EMAIL,
-        //     auth:{
-        //         user: process.env.EMAIL,
-        //         pass: process.env.PASSWORD_EMAIL
-        //     },
-        //     sender: process.env.EMAIL,
-        //     tls:{
-        //         rejectUnauthorized: false
-        //     },
-        //     secure: true
-        // })
-
         return mailer.createTransport({
-            service: 'gmail',
+            host: process.env.HOST_EMAIL,
+            port: process.env.PORT_EMAIL,
             auth:{
-                user: "noreply.team71@gmail.com",
-                pass: 'ppsd eeoj qrdy ggsa'
-            }
+                user: process.env.EMAIL,
+                pass: process.env.PASSWORD_EMAIL
+            },
+            sender: process.env.EMAIL,
+            tls:{
+                rejectUnauthorized: false
+            },
+            secure: true
         })
+
+        // return mailer.createTransport({
+        //     service: 'gmail',
+        //     auth:{
+        //         user: "noreply.team71@gmail.com",
+        //         pass: 'ppsd eeoj qrdy ggsa'
+        //     }
+        // })
     }
 
     async sendMailHtml(email, subject, body){
@@ -53,7 +53,7 @@ class SendMail{
         try {
             const sendHistory = await this.#prepare().sendMail({
                 to: email,
-                from: process.env.EMAIL,
+                from: `"Team 71" <${process.env.EMAIL}>`,
                 subject: subject,
                 text: body
             });

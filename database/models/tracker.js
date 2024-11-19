@@ -36,11 +36,37 @@ const Tracker = sequelize.define("tracker",{
         defaultValue: 0,
         allowNull: false
     },
+    country: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        default: "Unknown"
+    },
     userId:{
         type: Sequelize.INTEGER,
         allowNull: false
     }
 },{
+    indexes:[
+
+        {
+            fields: ['linkId'],
+            name: "tracker_linkId"
+        },
+        {
+            fields: ['ip'],
+            name: "ip",
+        },
+        {
+            fields: ['click_device'],
+        },
+        {
+            fields: ["country", "userId"],
+        },
+        {
+            fields: ["userId"]
+        }
+
+    ],
     tableName: "tracker",
     timestamps: false
 })

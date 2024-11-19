@@ -2,7 +2,7 @@ const sequelize = require("./database/db");
 
 
 
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync({ alter: true }).then(() => {
   console.log('Database & tables created!');
   AppSetting.create({packname: 'free', api: 15, website: 35, total:50})
   AppSetting.create({packname: 'gold', api: 200, website: 200, total:400});
@@ -17,14 +17,16 @@ const AppSetting = require("./database/models/appSetting");
 const BinancePending = require("./database/models/binancepending");
 const PaymentHistory = require("./database/models/paymentHistory");
 const StoreLink = require("./database/models/storelink");
-const Subscribtion = require("./database/models/subscribtion");
+const Subscription = require("./database/models/subscribtion");
 const Tracker = require("./database/models/tracker");
+const Qrcode = require("./database/models/qrcode");
 
-User.hasOne(Subscribtion, {foreignKey: "userId"});
-Subscribtion.belongsTo(User, {foreignKey: "userId"})
+
+User.hasOne(Subscription, {foreignKey: "userId", });
+Subscription.belongsTo(User, {foreignKey: "userId"})
 
 User.hasOne(Tracker, {foreignKey: "userId"});
 Tracker.belongsTo(User, {foreignKey: "userId"})
 
 User.hasOne(StoreLink, {foreignKey: "userId"});
-StoreLink.belongsTo(User, {foreignKey: "userId"})
+StoreLink.belongsTo(User, {foreignKey: "userId"});

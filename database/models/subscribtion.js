@@ -41,6 +41,20 @@ const Subscribtion = sequelize.define("subscribers", {
     }
 
 },{
+    indexes: [
+        {
+            fields: ["userId", 'valid', "lastUpdate", "plan"]
+        },
+        {
+            fields: ["valid"],
+        },
+        {
+            fields: ["plan"],
+        },
+        {
+            fields: ["lastUpdate"],
+        }
+    ],
     timestamps: false,
     tableName: "subscribers",
     //createdAt: "createAt",

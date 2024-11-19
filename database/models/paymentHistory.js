@@ -43,6 +43,17 @@ const PaymentHistory = sequelize.define("paymenthistory", {
         allowNull: false
     }
 },{
+    indexes: [
+        {
+            fields: ["userId","amount", "plan"],
+        },
+        {
+            fields: ["payId","amount"],
+        },
+        {
+            fields: ["userId"],
+        }
+    ],
     tableName: "paymenthistory",
     timestamps: false,
 
