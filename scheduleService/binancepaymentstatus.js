@@ -16,16 +16,16 @@ class BinancePaymentStatus{
     constructor(){}
 
     async checkPaymentStatus(){
-        var size = 0;
-        while(true){
+        const totalPage = await BinancePending.count()/100;
+
+        for (let index = 0; index < totalPage; index++) {
             const getpending = await BinancePending.findAll({
-                offset: size*100,
+                offset: index * 100,
                 limit:100,
                 raw: true
             });
             //console.log(getpending);
             if (getpending.length <= 0) {
-                size = 0;
                 break;
             }
             for (let index = 0; index < getpending.length; index++) {
@@ -46,7 +46,7 @@ class BinancePaymentStatus{
                     }
                     const getPaymentData = await checkPaymentStatus.getPaymentStatus(data, userData.userId)
                     console.log(getPaymentData);
-                    if (!getPaymentData || getPaymentData.status === "PAID") {
+                    if (getPaymentData && getPaymentData.status === "PAID") {
                         const plan = Number(getPaymentData.orderAmount) == 8 ? "platinum" : "gold";
                         const oldPlan = await Subscribtion.findOne({
                             where: {userId: userData.userId},
@@ -96,8 +96,9 @@ class BinancePaymentStatus{
                     }
                 }
             }
-            size = size+1;
+            
         }
+
 
     }
 

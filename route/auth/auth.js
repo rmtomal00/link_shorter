@@ -6,6 +6,7 @@ const JwtToken = require("../../Jwt/TokenExtractor");
 const { hashSync, compareSync } = require("bcrypt");
 const SendMail = require("../../mailconf/sendMail");
 const Subscribtion = require("../../database/models/subscribtion");
+require('dotenv').config();
 const auth = express.Router()
 const nullChecker = new NullChecker()
 const Res = new Response()
@@ -95,7 +96,7 @@ auth.post("/login", async (req, res)=>{
             return;
         }
 
-        const genToken = jwtToken.createTokenLogin(userDetails.email, userDetails.id, '48h');
+        const genToken = jwtToken.createTokenLogin(userDetails.email, userDetails.id, process.env.LOGIN_EXPIRE);
         //console.log(genToken);
 
         const userTokenUpdate = await User.update({token: genToken}, {where: {email: email}})

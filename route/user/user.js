@@ -251,7 +251,7 @@ users.post('/get-link-history-chunk', async (req, res)=>{
         }
         const userId  = Jwt.tokenExtractor(token).id;
         const userdata = await daily.getShortLinkWithDetails(startDate, endDate, {userId: userId}, Number(leave));
-        if (userdata.length == 0) {
+        if (userdata.length === 0) {
             Respon.errorResponse(res, "No more data exist", 200)
             return;
         }
@@ -293,5 +293,4 @@ users.post('/get-data-history-page', async (req, res)=>{
         Respon.serverError(res, error.message)
     }
 })
-
 module.exports = users

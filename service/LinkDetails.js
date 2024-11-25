@@ -9,7 +9,7 @@ class LinkDetails{
     async getLinkHistoryByUserforPaid(startDate, endDate, skip, ...findObject){
         try {
             const data = await Tracker.findAll({
-                attributes:["id", "userId", "link", "createAt", "ip", "click_device", "unique_click"],
+                attributes:["id", "userId", "link", "createAt", "ip", "click_device", "unique_click", 'country'],
                 where:{
                     [Op.and]:[
                         {createAt:{
@@ -28,6 +28,7 @@ class LinkDetails{
                 "ID": skip + index +1,
                 "USER ID": link.userId,
                 "LINK": link.link,
+                "COUNTY": link.country,
                 "IP": link.ip,
                 "TIME": format(link.createAt, 'dd.MM.yyyy HH:mm:ss'),
                 "DEVICE": link.click_device,
@@ -63,6 +64,7 @@ class LinkDetails{
                 "ID": skip + index +1,
                 "USER ID": link.userId,
                 "LINK": link.link,
+                "COUNTY": "Subscription Required",
                 "IP": "Subscription Required",
                 "TIME": "Subscription Required",
                 "DEVICE": "Subscription Required",
