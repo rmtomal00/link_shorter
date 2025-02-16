@@ -22,8 +22,8 @@ class SendMail{
         // return mailer.createTransport({
         //     service: 'gmail',
         //     auth:{
-        //         user: "noreply.team71@gmail.com",
-        //         pass: 'ppsd eeoj qrdy ggsa'
+        //         user: "",
+        //         pass: ''
         //     }
         // })
     }
